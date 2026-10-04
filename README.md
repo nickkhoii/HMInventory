@@ -42,6 +42,8 @@ npm run dev
 
 Open http://localhost:3000. The setup helper writes an ignored `.env` with username `administrator` and a random initial password. Read `ADMIN_INITIAL_PASSWORD` from that file locally; it is never printed or embedded in the frontend. Sign in and change the password in Settings. Seed reruns never overwrite an existing administrator password. Remove the initial password from `.env` after initialization. Sample data is opt-in with `SEED_SAMPLE_DATA=true`; the local helper enables it. Production should use `false`.
 
+Development also accepts `127.0.0.1` and IPv6 loopback origins when their protocol and port match the configured local `APP_ORIGIN`. Production mutations require the exact configured origin.
+
 ## Use an existing PostgreSQL database
 
 Copy `.env.example` to `.env` and configure:
@@ -131,6 +133,8 @@ npm run lint
 npm run typecheck
 npm run build
 ```
+
+On Windows, stop the running application before Prisma generation or a production build. If Prisma reports `EPERM` while renaming `query_engine-windows.dll.node`, a running Node process may hold the database engine open. Stop this project's development/test server, rerun the build, then restart it. PostgreSQL can remain running.
 
 For database integration tests, use a dedicated database **named exactly `hm_inventory_test`**. Apply migrations to that database first. Tests add uniquely named records and preserve history; they do not delete production data. Example PowerShell:
 

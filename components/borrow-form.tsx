@@ -5,6 +5,7 @@ import { borrowSchema } from "@/lib/borrow-validation";
 import { borrowerTypes } from "@/lib/borrow-rules";
 import { api, Field, Select, formData, label, today } from "./ui";
 import type { Options } from "./types";
+import { requestKey, type PendingRequest } from "@/lib/request-id";
 type Line = {
   key: number;
   inventoryItemId: string;
@@ -22,7 +23,7 @@ const blank = (key: number): Line => ({
 export function BorrowForm({ options }: { options: Options }) {
   const router = useRouter(),
     key = useRef(1),
-    requestId = useRef<string | null>(null);
+    requestId = useRef<PendingRequest>(null);
   const [lines, setLines] = useState<Line[]>([blank(0)]),
     [busy, setBusy] = useState(false),
     [error, setError] = useState("");
@@ -39,8 +40,6 @@ export function BorrowForm({ options }: { options: Options }) {
     try {
       const parsed = borrowSchema.safeParse({
         ...formData(event.currentTarget),
-        requestId:
-          requestId.current ?? (requestId.current = crypto.randomUUID()),
         items: lines.map(({ key: _key, ...line }) => {
           void _key;
           return line;
@@ -52,11 +51,11 @@ export function BorrowForm({ options }: { options: Options }) {
             .map((i) => `${i.path.join(".")}: ${i.message}`)
             .join("; "),
         );
-      const result = await api<{ id: string }>(
-        "borrowing",
-        "POST",
-        parsed.data,
-      );
+      requestId.current = requestKey(requestId.current, parsed.data);
+      const result = await api<{ id: string }>("borrowing", "POST", {
+        ...parsed.data,
+        requestId: requestId.current.id,
+      });
       router.push(`/borrowing/${result.id}`);
     } catch (e) {
       setError((e as Error).message);

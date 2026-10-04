@@ -3,7 +3,8 @@ export async function jsonObject(
   req: Request,
 ): Promise<Record<string, unknown>> {
   if (
-    !req.headers.get("content-type")?.toLowerCase().includes("application/json")
+    req.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !==
+    "application/json"
   )
     throw new AppError("Send an application/json request", 415);
   const reader = req.body?.getReader();

@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { operationSchema } from "@/lib/validation";
 import { api, Field, Select, formData, label, today } from "./ui";
 import type { Options, Incident } from "./types";
+import { requestKey, type PendingRequest } from "@/lib/request-id";
 const adjustmentTypes = [
   "ADD",
   "DEDUCT",
@@ -27,7 +28,7 @@ export function MovementForm({
   onSave: () => void;
   onCancel?: () => void;
 }) {
-  const requestId = useRef<string | null>(null);
+  const requestId = useRef<PendingRequest>(null);
   const [selected, setSelected] = useState(record?.itemId ?? ""),
     [operation, setOperation] = useState(type === "ADJUSTMENT" ? "ADD" : type),
     [busy, setBusy] = useState(false),
@@ -62,8 +63,6 @@ export function MovementForm({
     setError("");
     try {
       const data = {
-        requestId:
-          requestId.current ?? (requestId.current = crypto.randomUUID()),
         ...formData(e.currentTarget),
         itemId: effectiveRecord?.itemId ?? selected,
         type: operation,
@@ -79,7 +78,11 @@ export function MovementForm({
             .map((i) => `${i.path.join(".")}: ${i.message}`)
             .join("; "),
         );
-      await api("movements", "POST", parsed.data);
+      requestId.current = requestKey(requestId.current, parsed.data);
+      await api("movements", "POST", {
+        ...parsed.data,
+        requestId: requestId.current.id,
+      });
       requestId.current = null;
       onSave();
     } catch (e) {

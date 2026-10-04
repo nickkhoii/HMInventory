@@ -41,3 +41,36 @@ Validation: 61 unit tests, 24 real PostgreSQL tests, 10 production browser/API t
 ## Borrow and return addition
 
 The subsequent borrow/return module adds normalized loan and return tables, preserved borrower/release snapshots, partial returns, linked damaged/lost dispositions, computed overdue status, cancellation, history/timelines, dashboard alerts and ten additional reports. Database safeguards now include borrowed units in the unavailable-stock equation. Two additive migrations were applied without resetting inventory. Updated results are recorded in VERIFICATION.md.
+
+# Project audit — October 4, 2026
+
+Reviewed authentication, API routing and validation, inventory and incident services, borrowing and returns, reports and exports, client forms and navigation, database schema and integrity triggers, local setup, dependencies, and production build behavior. Existing branding changes were preserved. Integration and browser tests write only to the guarded `hm_inventory_test` database.
+
+| Finding | Fix and verification |
+| --- | --- |
+| Development login failed through `127.0.0.1` when `APP_ORIGIN` used `localhost`. | Development accepts loopback aliases on the configured protocol and port. Production still requires the exact configured origin. Regression tests reject foreign hosts, ports, protocols, null origins, and origins containing paths. |
+| Stock, borrow, and return forms retained a request key after the submitted values changed. An edited retry could conflict with a previously committed submission. | Keys now follow the normalized, validated payload. Identical retries reuse their key; edited submissions receive a new key. A production browser regression simulates a committed stock movement whose response is lost and verifies that an identical retry does not add stock twice. |
+| Concurrent stock submissions could use the same request key against different inventory items, bypassing item-level serialization and reaching a unique-constraint race. | An advisory transaction lock serializes requests by key before inventory locking, matching the borrowing/return services. The integration regression verifies one committed movement and one explicit conflict, with correct balances. |
+| CSV formula escaping missed formulas preceded by spaces or a newline. | CSV exports prefix suspicious cells with an apostrophe and preserve normal quoting. Regression tests cover whitespace, newline, tab, and formula prefixes. |
+| JSON parsing accepted media types merely containing `application/json`. | The parser requires the exact media type, while allowing charset parameters. Lookalike types return 415. Existing body-size and malformed-JSON protections remain covered. |
+| Activity filters interpreted Manila dates as UTC timestamp boundaries. | Timestamped activity uses Manila midnight boundaries. Date-only acquisition, borrowing, and return values keep their calendar-date semantics. |
+| The dashboard's 30-day stock chart used the UTC calendar day. | Its range now ends on the laboratory's Manila calendar day, including the current day during the first eight hours after Manila midnight. |
+| A failed report request left the previous report and export buttons visible. | Starting generation clears the prior result and export query. The browser regression verifies that reversed dates cannot leave stale exports visible. |
+| An item-detail load failure had no retry control, and its error was not cleared on reload. | Added a retry button and cleared the error before reloading. |
+| On Windows, Prisma generation failed with EPERM while the running development server held the query-engine DLL. | Stopped the identified project server during build verification. The final production build passed. README documents releasing the lock before generation/build. |
+
+### Follow-up verification
+
+- 93 unit/validation/security regression tests passed.
+- 42 PostgreSQL integration tests passed.
+- 15 production browser/API tests passed, exercising all 17 modules, stock/incident workflows, borrowing/returns/cancellation, authentication, CSRF, CSP, session expiry, password changes, exports/printing, URL navigation, and mobile layout.
+- ESLint, strict TypeScript, production build, and Prisma schema validation passed.
+- All six migrations are applied; Prisma reports no schema drift.
+- Read-only checks of the development database found zero stock/loan/incident balance violations and zero valuation mismatches. Encoding is UTF-8.
+- npm's advisory check reported zero known vulnerabilities across production and development dependencies.
+
+### Follow-up scope and operational limits
+
+Optional item photographs are explicitly optional in the project specification and remain omitted. Reports retain the documented 5,000-row limit and built-in PDF font limitations. Cloud deployment and provider configuration were not tested. Test coverage and code review do not prove the absence of every possible defect.
+
+Windows browser testing required execution outside the restricted sandbox after an account-lookup failure in the test seed subprocess. The database guard remained active; the development database was not reset or seeded by the audit.

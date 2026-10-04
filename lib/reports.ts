@@ -6,6 +6,7 @@ import { borrowReportData } from "./borrow-reports";
 import { z } from "zod";
 import { dateRange } from "./query-validation";
 import { decimalTotal } from "./money";
+export { csvCell } from "./csv";
 export async function generateReport(params: URLSearchParams) {
   const kind = (params.get("kind") ?? "complete") as ReportKind;
   if (!reportKinds.includes(kind)) throw new AppError("Invalid report type");
@@ -238,8 +239,4 @@ export async function generateReport(params: URLSearchParams) {
     totalQuantity,
     totalValue,
   };
-}
-export function csvCell(value: string | number) {
-  const s = String(value);
-  return `"${(/^[=+\-@\t\r]/.test(s) ? "'" : "") + s.replaceAll('"', '""')}"`;
 }

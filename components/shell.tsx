@@ -3,7 +3,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  FlaskConical,
   LayoutDashboard,
   Package,
   Tags,
@@ -24,6 +23,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { api, label } from "./ui";
+import { BrandLogo } from "./brand-logo";
 const nav = [
   ["dashboard", "Dashboard", LayoutDashboard],
   ["inventory", "Inventory", Package],
@@ -83,9 +83,7 @@ export function Shell({
       )}
       <aside className={`sidebar ${open ? "open" : ""}`}>
         <Link href="/dashboard" className="brand">
-          <span className="brand-icon">
-            <FlaskConical size={22} />
-          </span>
+          <BrandLogo />
           <div>
             <strong>HM LABORATORY</strong>
             <small>Inventory Management</small>

@@ -122,8 +122,8 @@ export async function recordMovement(raw: unknown) {
     .update(JSON.stringify(input))
     .digest("hex");
   return db.$transaction(async (tx) => {
-    const item = await lockItem(tx, input.itemId);
     if (input.requestId) {
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${input.requestId},0))::text`;
       const prior = await tx.inventoryTransaction.findUnique({
         where: { requestId: input.requestId },
       });
@@ -136,6 +136,7 @@ export async function recordMovement(raw: unknown) {
         return prior;
       }
     }
+    const item = await lockItem(tx, input.itemId);
     if (!item.isActive)
       throw new AppError("Restore the item before recording movements");
     let next =

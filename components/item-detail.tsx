@@ -24,6 +24,7 @@ export function ItemDetail({ id }: { id: string }) {
     [editing, setEditing] = useState(false),
     [error, setError] = useState("");
   const load = useCallback(async () => {
+    setError("");
     try {
       const [i, o] = await Promise.all([
         api<Detail>(`inventory/${id}`),
@@ -40,9 +41,12 @@ export function ItemDetail({ id }: { id: string }) {
   }, [load]);
   if (error)
     return (
-      <p className="alert error" role="alert">
-        {error}
-      </p>
+      <section className="panel">
+        <p className="alert error" role="alert">
+          {error}
+        </p>
+        <button onClick={() => void load()}>Try again</button>
+      </section>
     );
   if (!item) return <Loading />;
   const fields = {

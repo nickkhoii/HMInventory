@@ -22,6 +22,128 @@ test.beforeEach(async ({ page }) => {
   ).toBe(200);
 });
 test.afterAll(() => db.$disconnect());
+test("lost movement responses can be retried safely and edited submissions use fresh keys", async ({
+  page,
+}) => {
+  const suffix = randomUUID().slice(0, 8);
+  const options = await (await page.request.get("/api/options")).json();
+  const response = await page.request.post("/api/inventory", {
+    headers: { Origin: origin },
+    data: {
+      inventoryCode: `RETRY-${suffix}`,
+      name: `Retry ${suffix}`,
+      categoryId: options.categories.find(
+        (c: { isActive: boolean }) => c.isActive,
+      ).id,
+      locationId: options.locations.find(
+        (c: { isActive: boolean }) => c.isActive,
+      ).id,
+      unit: "piece",
+      quantity: 10,
+      minimumStock: 0,
+      unitCost: 10,
+      dateAcquired: "2026-10-04",
+      condition: "GOOD",
+    },
+  });
+  expect(response.status()).toBe(200);
+  const item = await response.json();
+  const keys: string[] = [];
+  let loseResponse = true;
+  await page.route("**/api/movements", async (route) => {
+    keys.push(route.request().postDataJSON().requestId);
+    const result = await route.fetch();
+    expect(result.status()).toBe(200);
+    if (loseResponse) {
+      loseResponse = false;
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "Simulated lost response" }),
+      });
+    } else await route.fulfill({ response: result });
+  });
+  await page.goto("/stock-in");
+  await page
+    .getByLabel("Inventory item", { exact: false })
+    .selectOption(item.id);
+  await page
+    .getByRole("spinbutton", { name: "Quantity", exact: true })
+    .fill("2");
+  await page
+    .getByRole("button", { name: "Record Stock In", exact: true })
+    .click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Simulated lost response" }),
+  ).toContainText("Simulated lost response");
+  await page
+    .getByRole("button", { name: "Record Stock In", exact: true })
+    .click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Stock movement recorded" }),
+  ).toBeVisible();
+  expect(keys[1]).toBe(keys[0]);
+  expect(
+    (await (await page.request.get(`/api/inventory/${item.id}`)).json())
+      .quantity,
+  ).toBe(12);
+  // A second interrupted submission is edited before retrying.
+  loseResponse = true;
+  await page
+    .getByLabel("Inventory item", { exact: false })
+    .selectOption(item.id);
+  await page
+    .getByRole("spinbutton", { name: "Quantity", exact: true })
+    .fill("2");
+  await page
+    .getByRole("button", { name: "Record Stock In", exact: true })
+    .click();
+  await expect(
+    page.getByRole("alert").filter({ hasText: "Simulated lost response" }),
+  ).toContainText("Simulated lost response");
+  await page
+    .getByRole("spinbutton", { name: "Quantity", exact: true })
+    .fill("3");
+  await page
+    .getByRole("button", { name: "Record Stock In", exact: true })
+    .click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Stock movement recorded" }),
+  ).toBeVisible();
+  expect(keys[3]).not.toBe(keys[2]);
+  expect(
+    (await (await page.request.get(`/api/inventory/${item.id}`)).json())
+      .quantity,
+  ).toBe(17);
+});
+
+test("failed report generation clears previous results and export buttons", async ({
+  page,
+}) => {
+  await page.goto("/reports");
+  await page
+    .getByRole("button", { name: "Generate report", exact: true })
+    .click();
+  await expect(
+    page.getByRole("link", { name: "CSV", exact: true }),
+  ).toBeVisible();
+  await page.getByLabel("Start date", { exact: true }).fill("2026-10-05");
+  await page.getByLabel("End date", { exact: true }).fill("2026-10-04");
+  await page
+    .getByRole("button", { name: "Generate report", exact: true })
+    .click();
+  await expect(
+    page
+      .getByRole("alert")
+      .filter({ hasText: "End date must be on or after start date" }),
+  ).toContainText("End date must be on or after start date");
+  await expect(
+    page.getByRole("link", { name: "CSV", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "PDF", exact: true }),
+  ).toHaveCount(0);
+});
 test("URL navigation updates filters and archived incidents can be restored and repaired", async ({
   page,
 }) => {

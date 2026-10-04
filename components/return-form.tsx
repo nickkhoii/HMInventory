@@ -4,6 +4,7 @@ import { returnSchema } from "@/lib/borrow-validation";
 import { returnConditions } from "@/lib/borrow-rules";
 import { api, Field, Select, formData, label, today } from "./ui";
 import type { BorrowRecord } from "./types";
+import { requestKey, type PendingRequest } from "@/lib/request-id";
 type Line = {
   key: number;
   borrowTransactionItemId: string;
@@ -22,7 +23,7 @@ export function ReturnForm({
 }) {
   const pending = record.items.filter((i) => i.quantityOutstanding > 0);
   const key = useRef(pending.length),
-    requestId = useRef<string | null>(null);
+    requestId = useRef<PendingRequest>(null);
   const blank = (id: string, index: number): Line => ({
     key: index,
     borrowTransactionItemId: id,
@@ -54,8 +55,6 @@ export function ReturnForm({
       const parsed = returnSchema.safeParse({
         ...formData(e.currentTarget),
         borrowTransactionId: record.id,
-        requestId:
-          requestId.current ?? (requestId.current = crypto.randomUUID()),
         items: selected.map(({ key: _key, ...line }) => {
           void _key;
           return line;
@@ -67,7 +66,12 @@ export function ReturnForm({
             .map((i) => `${i.path.join(".")}: ${i.message}`)
             .join("; "),
         );
-      await api("returns", "POST", parsed.data);
+      requestId.current = requestKey(requestId.current, parsed.data);
+      await api("returns", "POST", {
+        ...parsed.data,
+        requestId: requestId.current.id,
+      });
+      requestId.current = null;
       onSave();
     } catch (err) {
       setError((err as Error).message);

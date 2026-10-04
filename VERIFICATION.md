@@ -4,9 +4,9 @@ Audited October 4, 2026 on Windows with Node.js 24.19.0, Next.js 16.3.8, Prisma 
 
 | Check                                       | Result                                     |
 | ------------------------------------------- | ------------------------------------------ |
-| Unit and validation tests                   | 80 passed                                  |
-| PostgreSQL integration tests                | 41 passed                                  |
-| Browser/API tests against production build  | 13 passed                                  |
+| Unit and validation tests                   | 93 passed                                  |
+| PostgreSQL integration tests                | 42 passed                                  |
+| Browser/API tests against production build  | 15 passed                                  |
 | ESLint                                      | Passed                                     |
 | Strict TypeScript                           | Passed                                     |
 | Production build                            | Passed                                     |

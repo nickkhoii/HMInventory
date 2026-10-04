@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { compare } from "bcryptjs";
 import { db } from "./db";
 import { AppError } from "./errors";
+import { allowedOrigin } from "./origin";
 export const SESSION_COOKIE = "hm_session";
 export const tokenHash = (token: string) =>
   createHash("sha256").update(token).digest("hex");
@@ -21,7 +22,13 @@ export async function checkOrigin() {
   const h = await headers();
   const configured = process.env.APP_ORIGIN;
   if (!configured) throw new AppError("APP_ORIGIN is not configured", 503);
-  if (h.get("origin") !== new URL(configured).origin)
+  if (
+    !allowedOrigin(
+      h.get("origin"),
+      configured,
+      process.env.NODE_ENV === "development",
+    )
+  )
     throw new AppError("Invalid request origin", 403);
 }
 export async function login(

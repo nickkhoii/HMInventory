@@ -49,6 +49,41 @@ beforeAll(async () => {
 });
 afterAll(() => db.$disconnect());
 describe("PostgreSQL inventory workflows", () => {
+  it("serializes the same movement request key across different inventory items", async () => {
+    const keySuffix = randomUUID().slice(0, 8);
+    const first = await saveItem({
+      ...itemInput(),
+      inventoryCode: `KEY-A-${keySuffix}`,
+      name: `Request key fixture A ${keySuffix}`,
+    });
+    const second = await saveItem({
+      ...itemInput(),
+      inventoryCode: `KEY-B-${keySuffix}`,
+      name: `Request key fixture B ${keySuffix}`,
+    });
+    const requestId = randomUUID();
+    const results = await Promise.allSettled(
+      [first, second].map((item) =>
+        recordMovement({
+          ...movement("STOCK_IN", 1),
+          itemId: item.id,
+          requestId,
+        }),
+      ),
+    );
+    expect(
+      results.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(1);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected?.status === "rejected" && rejected.reason.status).toBe(409);
+    expect(await db.inventoryTransaction.count({ where: { requestId } })).toBe(
+      1,
+    );
+    const held = await db.inventoryItem.findMany({
+      where: { id: { in: [first.id, second.id] } },
+    });
+    expect(held.reduce((sum, item) => sum + item.quantity, 0)).toBe(41);
+  });
   it("creates inventory with history and calculated value", async () => {
     const item = await saveItem(itemInput());
     itemId = item.id;

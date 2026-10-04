@@ -5,11 +5,11 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  FlaskConical,
   ShieldCheck,
   LoaderCircle,
 } from "lucide-react";
 import { api, formData } from "./ui";
+import { BrandLogo } from "./brand-logo";
 export function Login() {
   const router = useRouter();
   const [show, setShow] = useState(false),
@@ -36,9 +36,7 @@ export function Login() {
     <div className="login-page">
       <section className="login-story">
         <div className="brand">
-          <span className="brand-icon">
-            <FlaskConical />
-          </span>
+          <BrandLogo />
           <div>
             <strong>HM LABORATORY</strong>
             <small>Inventory Management</small>
@@ -64,6 +62,7 @@ export function Login() {
       </section>
       <section className="login-form">
         <form onSubmit={submit}>
+          <BrandLogo className="login-logo" />
           <span className="eyebrow">ADMINISTRATOR ACCESS</span>
           <h2>Welcome back</h2>
           <p>Sign in to manage your laboratory inventory.</p>

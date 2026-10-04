@@ -59,7 +59,9 @@ export async function listTransactions(params: URLSearchParams) {
 }
 export async function listActivity(params: URLSearchParams) {
   let page = pageNumber(params);
-  const where: Prisma.ActivityLogWhereInput = { createdAt: dateRange(params) };
+  const where: Prisma.ActivityLogWhereInput = {
+    createdAt: dateRange(params, true),
+  };
   return db.$transaction(
     async (tx) => {
       const total = await tx.activityLog.count({ where });

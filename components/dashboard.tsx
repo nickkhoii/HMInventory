@@ -34,8 +34,8 @@ export type DashboardData = {
   dueBorrowing: BorrowRecord[];
 };
 const colors = [
-  "#137b68",
-  "#79b6a7",
+  "#ff8800",
+  "#ffb366",
   "#d0b47b",
   "#e18e78",
   "#8399b7",
@@ -175,7 +175,7 @@ export function Dashboard({ data }: { data: DashboardData }) {
                   <Bar
                     isAnimationActive={false}
                     dataKey="value"
-                    fill="#137b68"
+                    fill="#ff8800"
                     radius={[0, 4, 4, 0]}
                   />
                 </BarChart>
@@ -247,8 +247,8 @@ export function Dashboard({ data }: { data: DashboardData }) {
                   name="Stock in"
                   type="monotone"
                   dataKey="in"
-                  stroke="#137b68"
-                  fill="#137b68"
+                  stroke="#ff8800"
+                  fill="#ff8800"
                   fillOpacity={0.13}
                 />
                 <Area

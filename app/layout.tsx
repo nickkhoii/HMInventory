@@ -4,6 +4,10 @@ import { connection } from "next/server";
 export const metadata: Metadata = {
   title: "HM Laboratory · Inventory",
   description: "Hospitality Management Laboratory Inventory Management System",
+  icons: {
+    icon: "/hm-logo.png",
+    apple: "/hm-logo.png",
+  },
 };
 export default async function RootLayout({
   children,

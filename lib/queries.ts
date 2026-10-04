@@ -4,6 +4,7 @@ import { AppError } from "./errors";
 import { conditions } from "./validation";
 import { decimalTotal } from "./money";
 import { borrowingDashboard } from "./borrow-queries";
+import { laboratoryToday } from "./borrow-rules";
 import { z } from "zod";
 import { pageNumber, dateRange, archiveFilter } from "./query-validation";
 export const label = (value: string) =>
@@ -119,7 +120,7 @@ export async function dashboard() {
     byCondition[label(item.condition)] =
       (byCondition[label(item.condition)] || 0) + item.quantity;
   }
-  const since = new Date();
+  const since = new Date(laboratoryToday());
   since.setUTCDate(since.getUTCDate() - 29);
   since.setUTCHours(0, 0, 0, 0);
   const movements = await db.inventoryTransaction.findMany({

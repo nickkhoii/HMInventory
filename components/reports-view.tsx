@@ -1,4 +1,5 @@
 "use client";
+import { BrandLogo } from "./brand-logo";
 import { useState } from "react";
 import { Download, Printer, FileText } from "lucide-react";
 import { reportKinds, isBorrowReport } from "@/lib/report-kinds";
@@ -16,6 +17,8 @@ export function ReportsView({ options }: { options: Options }) {
     e.preventDefault();
     setBusy(true);
     setError("");
+    setReport(undefined);
+    setQuery("");
     const data = formData(e.currentTarget);
     const p = new URLSearchParams();
     for (const [k, v] of Object.entries(data)) if (v) p.set(k, String(v));
@@ -206,6 +209,7 @@ export function ReportsView({ options }: { options: Options }) {
             </button>
           </div>
           <div className="report-heading">
+            <BrandLogo className="report-logo" />
             <span className="eyebrow">
               {report.institution} · {report.laboratory}
             </span>
