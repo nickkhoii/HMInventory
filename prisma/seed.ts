@@ -4,8 +4,8 @@ import { hash } from "bcryptjs";
 import { randomUUID } from "node:crypto";
 const prisma = new PrismaClient();
 async function main() {
-  const username = process.env.ADMIN_USERNAME || "administrator",
-    name = process.env.ADMIN_NAME || "Laboratory Administrator",
+  const username = (process.env.ADMIN_USERNAME || "administrator").trim(),
+    name = (process.env.ADMIN_NAME || "Laboratory Administrator").trim(),
     password = process.env.ADMIN_INITIAL_PASSWORD;
   const existing = await prisma.admin.findUnique({ where: { id: 1 } });
   if (

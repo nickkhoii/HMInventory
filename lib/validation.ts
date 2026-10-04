@@ -42,6 +42,7 @@ export const dateSchema = z
   .regex(/^\d{4}-\d{2}-\d{2}$/)
   .refine(
     (v) =>
+      v.slice(0, 4) !== "0000" &&
       !Number.isNaN(Date.parse(v)) &&
       new Date(v).toISOString().slice(0, 10) === v,
     "Invalid date",

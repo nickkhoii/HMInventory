@@ -179,6 +179,7 @@ export function Workspace({ section }: { section: string }) {
                   </div>
                 </div>
                 <MovementForm
+                  onStart={() => setToast("")}
                   type={
                     section === "stock-in"
                       ? "STOCK_IN"

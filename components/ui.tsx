@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useId } from "react";
 import { X, LoaderCircle, PackageOpen } from "lucide-react";
+export { api } from "@/lib/client-api";
 export const label = (v: string) =>
   v
     .toLowerCase()
@@ -31,24 +32,6 @@ export const today = () =>
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
-export async function api<T>(
-  path: string,
-  method = "GET",
-  body?: unknown,
-): Promise<T> {
-  const res = await fetch(`/api/${path}`, {
-    method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    if (res.status === 401 && !path.startsWith("auth/login"))
-      window.dispatchEvent(new Event("hm:session-expired"));
-    throw new Error(data.error ?? "Request failed");
-  }
-  return data;
-}
 export function Badge({ value }: { value: string }) {
   return <span className={`badge ${value.toLowerCase()}`}>{label(value)}</span>;
 }

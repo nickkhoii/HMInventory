@@ -24,7 +24,23 @@ Node.js 22.12+ or Node.js 24 LTS; npm; PostgreSQL 16+ (UTF-8). A local PostgreSQ
 
 On Windows PowerShell use `npm.cmd` if execution policy blocks `npm.ps1`. The commands below use `npm`; substitute `npm.cmd` where needed.
 
-## Quick local setup
+## Quick setup with Neon
+
+Create a Neon PostgreSQL project, then copy `.env.example` to `.env` (preserve an existing `.env` if you still need its local configuration). In Neon's **Connect** dialog, copy the pooled connection string into `DATABASE_URL` and the direct connection string into `DIRECT_URL`. Use the same branch, database and role for both. Keep `sslmode=require`; add `connect_timeout=15` to allow time for a suspended compute to wake up. Set a unique `ADMIN_INITIAL_PASSWORD` and leave `SEED_SAMPLE_DATA=false` for an empty inventory.
+
+```sh
+npm ci
+npm run db:generate
+npm run db:deploy
+npm run db:seed
+npm run dev
+```
+
+Open http://localhost:3000, sign in with the configured administrator credentials, and change the password in Settings. Remove `ADMIN_INITIAL_PASSWORD` from `.env` after initialization. No local PostgreSQL process is needed when using Neon. Prisma loads `.env` directly, so put the connection URLs there rather than only in `.env.local`.
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for Vercel production and preview configuration. This setup initializes a fresh database; it does not copy existing local inventory.
+
+## Optional local PostgreSQL setup
 
 ```sh
 npm ci
@@ -168,7 +184,7 @@ For a clean repeat of local integration tests only, `scripts/reset-test-db.mjs` 
 1. Create a Neon PostgreSQL project and use a UTF-8 database. Obtain pooled and direct connection strings with `sslmode=require`.
 2. Import this repository into Vercel as a Next.js project. Set `DATABASE_URL` to the pooled URL, `DIRECT_URL` to the direct URL, and `APP_ORIGIN` to the exact HTTPS site origin. Use separate databases for preview and production.
 3. From a trusted terminal with the production connection variables, run `npm ci` and `npm run db:deploy`. Run `npm run db:seed` once with a unique initial administrator password and `SEED_SAMPLE_DATA=false`. Remove initialization credentials afterward. Do not put them in source control or public variables.
-4. Use `npm run build` as the Vercel build command. It generates the Prisma client before building Next.js. Migrations are an explicit release step rather than being run on every preview build.
+4. The committed `vercel.json` uses `npm run build:vercel`: generate Prisma Client, apply committed migrations, then build Next.js. Preview environments must use a separate Neon branch/database because their builds apply migrations too. The ordinary `npm run build` command only generates Prisma Client and builds the application.
 5. Deploy, sign in over HTTPS, change the initial password and verify a stock transaction and report. Confirm `APP_ORIGIN` matches the chosen domain; update it if a custom domain changes.
 
 The project is prepared for deployment; these instructions do not create a cloud database or publish a live Vercel site. `next start` serves the production build locally; HTTPS is required for production session cookies. Use a local TLS reverse proxy when verifying production authentication locally, or use `next dev` for ordinary local work.

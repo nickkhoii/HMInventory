@@ -20,12 +20,14 @@ export function MovementForm({
   options,
   record,
   onSave,
+  onStart,
   onCancel,
 }: {
   type: string;
   options: Options;
   record?: Incident;
   onSave: () => void;
+  onStart?: () => void;
   onCancel?: () => void;
 }) {
   const requestId = useRef<PendingRequest>(null);
@@ -59,6 +61,7 @@ export function MovementForm({
   async function submit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
     if (busy) return;
+    onStart?.();
     setBusy(true);
     setError("");
     try {

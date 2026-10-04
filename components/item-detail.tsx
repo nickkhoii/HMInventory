@@ -122,7 +122,7 @@ export function ItemDetail({ id }: { id: string }) {
           {Object.entries(fields).map(([key, value]) => (
             <div key={key}>
               <dt>{key}</dt>
-              <dd>{value || "—"}</dd>
+              <dd>{value === "" ? "—" : value}</dd>
             </div>
           ))}
         </dl>

@@ -4,8 +4,13 @@ import { allowedOrigin } from "../lib/origin";
 import { csvCell } from "../lib/csv";
 import { jsonObject } from "../lib/http";
 import { dateRange } from "../lib/query-validation";
+import { dateSchema } from "../lib/validation";
 
 describe("audit security and retry regressions", () => {
+  it("rejects year zero before passing dates to PostgreSQL", () => {
+    expect(dateSchema.safeParse("0000-01-01").success).toBe(false);
+    expect(dateSchema.safeParse("0001-01-01").success).toBe(true);
+  });
   it("deduplicates identical retries and assigns edited submissions a new key", () => {
     const first = requestKey(null, { quantity: 2 });
     expect(requestKey(first, { quantity: 2 })).toEqual(first);
