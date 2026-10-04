@@ -1,0 +1,1107 @@
+# CODEX MASTER PROMPT
+## HM Laboratory Inventory Management System
+
+Act as a senior full-stack software engineer, database architect, UI/UX designer, QA engineer, and security engineer.
+
+Your task is to design and develop a complete, functional, production-quality **Inventory Management System for the HM (Hospitality Management) Laboratory**.
+
+This is a **single-user system**. There is only one authorized role:
+
+**Administrator**
+
+Do NOT create student, faculty, staff, custodian, or other user roles.
+
+The Administrator has complete access to all system functions.
+
+---
+
+# 1. SYSTEM NAME
+
+**HM Laboratory Inventory Management System**
+
+The system will be used to manage, monitor, and document the equipment, tools, utensils, appliances, furniture, supplies, and other inventory items found inside the Hospitality Management laboratory.
+
+The system must replace manual inventory records with a centralized digital inventory management platform.
+
+---
+
+# 2. RECOMMENDED TECHNOLOGY STACK
+
+Use the following technologies:
+
+### Frontend
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- Responsive web design
+
+### Backend
+Use Next.js server-side functionality/API routes.
+
+### Database
+- PostgreSQL
+
+### ORM
+- Prisma ORM
+
+### Authentication
+- Secure administrator login
+- Session-based authentication
+- Secure password hashing using bcrypt or Argon2
+
+### Validation
+- Zod
+
+### Reports
+- PDF report generation
+- CSV export
+- Print-friendly reports
+
+### Charts
+Use an appropriate React charting library for dashboard visualizations.
+
+The application should be deployable to Vercel with a cloud-hosted PostgreSQL database such as Neon.
+
+---
+
+# 3. USER ROLE
+
+There is ONLY ONE user role:
+
+## Administrator
+
+The Administrator can:
+
+- Login
+- Logout
+- Access dashboard
+- Add inventory items
+- Edit inventory items
+- View inventory items
+- Archive inventory items
+- Restore archived items
+- Manage categories
+- Manage laboratory locations
+- Record stock-in transactions
+- Record stock-out transactions
+- Record damaged items
+- Record lost/missing items
+- Record disposed items
+- Record item adjustments
+- Monitor stock levels
+- Search and filter inventory
+- Generate reports
+- Export reports
+- Print reports
+- View transaction history
+- View activity logs
+- Change administrator password
+- Manage system settings
+
+Do NOT implement registration.
+
+There should only be one Administrator account.
+
+---
+
+# 4. LOGIN PAGE
+
+Create a professional administrator login page.
+
+Fields:
+
+- Username
+- Password
+
+Features:
+
+- Show/hide password
+- Remember session securely
+- Login validation
+- Invalid credentials message
+- Loading indicator
+- Logout
+- Protected routes
+
+Unauthorized users must not be able to access administrator pages.
+
+Do not store passwords in plain text.
+
+---
+
+# 5. ADMIN DASHBOARD
+
+Create a modern dashboard displaying summary cards for:
+
+- Total Inventory Items
+- Total Quantity
+- Available Items
+- Low Stock Items
+- Out of Stock Items
+- Damaged Items
+- Missing/Lost Items
+- Disposed Items
+- Total Categories
+
+Include charts such as:
+
+### Inventory by Category
+Display quantity or item count per category.
+
+### Inventory by Condition
+Examples:
+
+- Good
+- Fair
+- Damaged
+- For Repair
+- Lost/Missing
+- Disposed
+
+### Stock Movement
+Show stock-in and stock-out activity over time.
+
+### Recent Transactions
+Display the latest inventory activities.
+
+### Low Stock Alert
+Display items that have reached or fallen below their minimum stock level.
+
+---
+
+# 6. INVENTORY MANAGEMENT
+
+Create a complete Inventory Management module.
+
+Each inventory item should contain:
+
+- Item ID
+- Asset/Inventory Code
+- Item Name
+- Description
+- Category
+- Brand
+- Model
+- Serial Number
+- Unit of Measurement
+- Quantity
+- Available Quantity
+- Minimum Stock Level
+- Unit Cost
+- Total Value
+- Date Acquired
+- Supplier
+- Location
+- Condition
+- Status
+- Notes
+- Created At
+- Updated At
+
+Optional image:
+
+- Item Photo
+
+Automatically calculate:
+
+**Total Value = Quantity × Unit Cost**
+
+Inventory Code must be unique.
+
+Example:
+
+HM-KITCHEN-0001
+
+---
+
+# 7. INVENTORY CATEGORIES
+
+Allow the Administrator to create, edit, archive, and restore categories.
+
+Suggested default categories:
+
+- Kitchen Appliances
+- Kitchen Equipment
+- Cooking Tools
+- Baking Tools
+- Utensils
+- Glassware
+- Tableware
+- Cutlery
+- Cookware
+- Furniture
+- Linens
+- Cleaning Equipment
+- Cleaning Supplies
+- Consumable Supplies
+- Electrical Equipment
+- Other Equipment
+
+Do not hard-code the system so that only these categories can be used.
+
+The Administrator must be able to add new categories.
+
+---
+
+# 8. LABORATORY LOCATIONS
+
+Create a Location Management module.
+
+Examples:
+
+- Main Kitchen Laboratory
+- Baking Laboratory
+- Dining Laboratory
+- Storage Room
+- Preparation Area
+- Washing Area
+- Equipment Room
+
+Administrator can:
+
+- Add location
+- Edit location
+- Archive location
+- Restore location
+
+---
+
+# 9. ITEM CONDITION
+
+Support the following conditions:
+
+- New
+- Good
+- Fair
+- Damaged
+- For Repair
+- Lost/Missing
+- Disposed
+
+The system should maintain condition history whenever the condition changes.
+
+---
+
+# 10. STOCK-IN MODULE
+
+Allow the Administrator to record incoming inventory.
+
+Fields:
+
+- Transaction Number
+- Date
+- Item
+- Quantity
+- Unit Cost
+- Supplier
+- Reference Number
+- Remarks
+
+When a Stock-In transaction is saved:
+
+**Current Quantity = Current Quantity + Stock-In Quantity**
+
+Maintain a permanent transaction history.
+
+---
+
+# 11. STOCK-OUT MODULE
+
+Allow inventory quantities to be reduced.
+
+Fields:
+
+- Transaction Number
+- Date
+- Item
+- Quantity
+- Purpose
+- Remarks
+
+When Stock-Out is recorded:
+
+**Current Quantity = Current Quantity - Stock-Out Quantity**
+
+The system MUST prevent the Administrator from removing more quantity than is currently available.
+
+Example:
+
+Available = 10
+
+Stock Out = 15
+
+The transaction must be rejected with an appropriate validation message.
+
+---
+
+# 12. INVENTORY ADJUSTMENTS
+
+Create an Adjustment module for correcting inventory discrepancies.
+
+Adjustment types:
+
+- Add Quantity
+- Deduct Quantity
+- Physical Count Correction
+- Damaged
+- Lost/Missing
+- Found/Recovered
+- Disposed
+- Returned
+- Other
+
+Require:
+
+- Item
+- Previous Quantity
+- Adjustment Quantity
+- New Quantity
+- Reason
+- Date
+- Remarks
+
+All adjustments must be logged.
+
+---
+
+# 13. DAMAGED ITEMS
+
+Create a page specifically for damaged equipment/items.
+
+Display:
+
+- Inventory Code
+- Item
+- Category
+- Quantity Damaged
+- Date Reported
+- Damage Description
+- Action Taken
+- Status
+
+Possible actions:
+
+- For Assessment
+- For Repair
+- Repaired
+- Beyond Repair
+- Disposed
+
+---
+
+# 14. LOST OR MISSING ITEMS
+
+Create a Lost/Missing Items module.
+
+Fields:
+
+- Item
+- Inventory Code
+- Quantity
+- Date Reported
+- Description
+- Remarks
+- Status
+
+Statuses:
+
+- Missing
+- Under Investigation
+- Recovered
+- Declared Lost
+
+If recovered, allow the item to be returned to available inventory where appropriate.
+
+---
+
+# 15. DISPOSAL MANAGEMENT
+
+Create a disposal record for inventory that is no longer usable.
+
+Fields:
+
+- Item
+- Inventory Code
+- Quantity
+- Reason for Disposal
+- Disposal Date
+- Disposal Method
+- Remarks
+
+Possible reasons:
+
+- Beyond Repair
+- Obsolete
+- Worn Out
+- Broken
+- Unsafe
+- Other
+
+Do NOT permanently delete historical inventory records.
+
+Use archiving/status changes so audit history remains available.
+
+---
+
+# 16. LOW STOCK MONITORING
+
+Each inventory item should have a:
+
+**Minimum Stock Level**
+
+Example:
+
+Current Quantity: 3  
+Minimum Stock: 5
+
+The item must automatically be marked:
+
+**LOW STOCK**
+
+If quantity reaches 0:
+
+**OUT OF STOCK**
+
+Show alerts on the dashboard.
+
+---
+
+# 17. SEARCH AND FILTERING
+
+Create fast inventory searching.
+
+Search by:
+
+- Inventory Code
+- Item Name
+- Brand
+- Model
+- Serial Number
+- Supplier
+
+Filters:
+
+- Category
+- Location
+- Condition
+- Status
+- Stock Level
+
+Support sorting by:
+
+- Item Name
+- Quantity
+- Date Acquired
+- Unit Cost
+- Total Value
+- Recently Updated
+
+Use pagination for large datasets.
+
+---
+
+# 18. INVENTORY HISTORY
+
+Every inventory item should have its own history page.
+
+Example timeline:
+
+October 1
+Initial Quantity: 20
+
+October 3
+Stock Out: -3
+Remaining: 17
+
+October 5
+Damaged: -1
+Available: 16
+
+October 10
+Stock In: +10
+Available: 26
+
+The history must make inventory movements easy to audit.
+
+---
+
+# 19. TRANSACTION HISTORY
+
+Create a centralized transaction history.
+
+Transaction types:
+
+- Stock In
+- Stock Out
+- Adjustment
+- Damage
+- Repair
+- Lost
+- Recovery
+- Disposal
+
+Display:
+
+- Transaction Number
+- Date
+- Item
+- Transaction Type
+- Quantity
+- Previous Quantity
+- New Quantity
+- Remarks
+
+---
+
+# 20. REPORTS MODULE
+
+Create professional reports for:
+
+### Inventory Reports
+- Complete Inventory Report
+- Inventory by Category
+- Inventory by Location
+- Inventory by Condition
+- Inventory Valuation Report
+
+### Stock Reports
+- Stock-In Report
+- Stock-Out Report
+- Low Stock Report
+- Out-of-Stock Report
+
+### Equipment Reports
+- Damaged Items Report
+- Items for Repair
+- Lost/Missing Items Report
+- Disposal Report
+
+Allow reports to be filtered by:
+
+- Start Date
+- End Date
+- Category
+- Location
+- Condition
+- Status
+
+Reports must support:
+
+- View
+- Print
+- PDF
+- CSV
+
+Use professional report formatting.
+
+Report header:
+
+**HM Laboratory Inventory Management System**
+
+Include:
+
+- Report title
+- Date generated
+- Filter criteria
+- Table
+- Totals
+- Page numbers where appropriate
+
+---
+
+# 21. ACTIVITY LOG
+
+Even though the application has only one Administrator, maintain an activity log.
+
+Record actions such as:
+
+- Login
+- Logout
+- Added Item
+- Edited Item
+- Archived Item
+- Restored Item
+- Stock In
+- Stock Out
+- Adjustment
+- Damaged Item
+- Lost Item
+- Recovered Item
+- Disposal
+- Generated Report
+- Changed Password
+
+Store:
+
+- Action
+- Description
+- Date
+- Time
+- IP address if appropriate
+
+The activity log should not be editable through normal application functions.
+
+---
+
+# 22. DATABASE DESIGN
+
+Create a properly normalized relational database.
+
+Suggested entities:
+
+### Admin
+- id
+- username
+- passwordHash
+- name
+- createdAt
+- updatedAt
+
+### Category
+- id
+- name
+- description
+- isActive
+- createdAt
+- updatedAt
+
+### Location
+- id
+- name
+- description
+- isActive
+- createdAt
+- updatedAt
+
+### InventoryItem
+- id
+- inventoryCode
+- name
+- description
+- categoryId
+- locationId
+- brand
+- model
+- serialNumber
+- unit
+- quantity
+- availableQuantity
+- minimumStock
+- unitCost
+- dateAcquired
+- supplier
+- condition
+- status
+- notes
+- createdAt
+- updatedAt
+
+### InventoryTransaction
+- id
+- transactionNumber
+- itemId
+- type
+- quantity
+- previousQuantity
+- newQuantity
+- unitCost
+- referenceNumber
+- purpose
+- remarks
+- transactionDate
+- createdAt
+
+### DamageRecord
+
+### LostItemRecord
+
+### DisposalRecord
+
+### ConditionHistory
+
+### ActivityLog
+
+Design appropriate relationships, indexes, foreign keys, unique constraints, and enums.
+
+Use database transactions for inventory operations so quantities cannot become inconsistent.
+
+---
+
+# 23. USER INTERFACE
+
+Create a professional modern administrative interface.
+
+Main sidebar:
+
+- Dashboard
+- Inventory
+- Categories
+- Locations
+- Stock In
+- Stock Out
+- Adjustments
+- Damaged Items
+- Lost/Missing Items
+- Disposal
+- Transactions
+- Reports
+- Activity Logs
+- Settings
+- Logout
+
+Use:
+
+- Responsive sidebar
+- Header
+- Breadcrumbs
+- Dashboard cards
+- Data tables
+- Modal/dialog forms where appropriate
+- Confirmation dialogs
+- Toast notifications
+- Loading states
+- Empty states
+- Error states
+- Responsive mobile/tablet/desktop layouts
+
+The design should look appropriate for an academic laboratory inventory system.
+
+---
+
+# 24. SECURITY
+
+Implement:
+
+- Secure password hashing
+- Authentication middleware
+- Protected API endpoints
+- Protected administrator routes
+- Server-side authorization
+- Input validation
+- SQL injection protection through ORM
+- XSS protection
+- CSRF protection where applicable
+- Secure cookies
+- Environment variables
+- Rate limiting for login where practical
+
+Never expose database credentials or authentication secrets to the frontend.
+
+---
+
+# 25. ADMIN SETTINGS
+
+Create a Settings page.
+
+Allow the Administrator to:
+
+- Change administrator name
+- Change username
+- Change password
+- Configure school/institution name
+- Configure laboratory name
+- Configure report header information
+
+Do not allow creation of additional user accounts.
+
+---
+
+# 26. SEED DATA
+
+Create database seed data.
+
+Create ONE default administrator account using environment variables or a secure initialization process.
+
+Also seed:
+
+- Sample categories
+- Sample locations
+- Sample inventory items
+- Sample transactions
+
+Clearly document how the administrator changes the initial password.
+
+Never hard-code production credentials.
+
+---
+
+# 27. DATA INTEGRITY
+
+Inventory quantities are critical.
+
+Implement database-safe operations.
+
+For every stock transaction:
+
+1. Validate item.
+2. Validate quantity.
+3. Read current quantity.
+4. Validate business rules.
+5. Create transaction.
+6. Update inventory quantity.
+7. Create audit/activity record.
+8. Commit everything atomically.
+
+If any step fails, rollback the complete operation.
+
+Never allow:
+
+- Negative inventory
+- Invalid quantities
+- Duplicate inventory codes
+- Orphan transactions
+- Invalid foreign keys
+
+---
+
+# 28. TESTING
+
+Create tests for important functionality.
+
+Test:
+
+- Admin login
+- Invalid login
+- Protected routes
+- Add inventory
+- Edit inventory
+- Stock in
+- Stock out
+- Stock out exceeding available inventory
+- Inventory adjustment
+- Damaged inventory
+- Lost inventory
+- Recovery
+- Disposal
+- Low stock calculation
+- Out-of-stock calculation
+- Report filtering
+
+---
+
+# 29. PROJECT STRUCTURE
+
+Organize the application professionally.
+
+Example:
+
+hm-laboratory-inventory/
+    app/
+    components/
+    lib/
+    prisma/
+    public/
+    types/
+    tests/
+    middleware.ts
+    .env.example
+    package.json
+    README.md
+
+Use reusable components and avoid unnecessarily large files.
+
+---
+
+# 30. README
+
+Create a comprehensive README containing:
+
+- Project overview
+- Features
+- Technology stack
+- System requirements
+- Installation
+- Environment configuration
+- PostgreSQL setup
+- Prisma setup
+- Database migration
+- Seed instructions
+- Development instructions
+- Production build
+- Vercel deployment
+- Neon PostgreSQL configuration
+- Default administrator initialization
+- Testing instructions
+- Troubleshooting
+
+---
+
+# 31. DEPLOYMENT
+
+Prepare the project for deployment using:
+
+Frontend/Application:
+**Vercel**
+
+Database:
+**Neon PostgreSQL**
+
+Create:
+
+- `.env.example`
+- Production-safe environment configuration
+- Prisma production configuration
+- Build scripts
+- Migration instructions
+
+Ensure the application works both locally and in production.
+
+---
+
+# 32. CODING STANDARDS
+
+Follow these rules:
+
+- TypeScript strict mode
+- Clean architecture
+- Reusable components
+- Clear naming conventions
+- Avoid duplicated code
+- Proper error handling
+- Server-side validation
+- Client-side validation for UX
+- Accessible HTML
+- Responsive UI
+- Meaningful comments only where needed
+
+Do not create placeholder pages where functional implementation is reasonably possible.
+
+Do not use fake buttons.
+
+Buttons, forms, filters, searches, transactions, reports, and dashboard statistics must actually work.
+
+---
+
+# 33. IMPLEMENTATION ORDER
+
+Develop the system incrementally.
+
+### Phase 1
+Project initialization and architecture.
+
+### Phase 2
+Database schema and Prisma migrations.
+
+### Phase 3
+Administrator authentication.
+
+### Phase 4
+Dashboard layout and navigation.
+
+### Phase 5
+Categories and locations.
+
+### Phase 6
+Inventory CRUD.
+
+### Phase 7
+Stock-In and Stock-Out.
+
+### Phase 8
+Inventory adjustments.
+
+### Phase 9
+Damage, lost/missing, recovery, and disposal management.
+
+### Phase 10
+Inventory and transaction history.
+
+### Phase 11
+Dashboard analytics.
+
+### Phase 12
+Reports, PDF, CSV, and printing.
+
+### Phase 13
+Activity logging and settings.
+
+### Phase 14
+Testing and validation.
+
+### Phase 15
+Production optimization and deployment configuration.
+
+Do not skip earlier dependencies merely to create later UI pages.
+
+---
+
+# 34. DEFINITION OF DONE
+
+The project is NOT complete merely because the pages exist.
+
+The system is complete only when:
+
+- Administrator can securely login.
+- Unauthorized pages are protected.
+- Administrator can manage inventory.
+- Categories work.
+- Locations work.
+- Stock-In updates inventory.
+- Stock-Out updates inventory.
+- Negative inventory is prevented.
+- Adjustments work.
+- Damaged items are tracked.
+- Lost/missing items are tracked.
+- Recovered items are handled correctly.
+- Disposal records work.
+- Low-stock alerts work.
+- Search/filtering works.
+- Transaction history works.
+- Item history works.
+- Dashboard statistics come from real database data.
+- Reports use real database data.
+- PDF/CSV/printing works.
+- Activity logging works.
+- Database migrations work.
+- Seed process works.
+- Tests for critical business logic pass.
+- Production build succeeds.
+- README contains complete setup/deployment instructions.
+
+---
+
+# 35. FINAL CODEX INSTRUCTION
+
+Begin by inspecting the current repository.
+
+If the repository is empty, initialize the application using the architecture above.
+
+Before writing code, determine the appropriate folder structure, database model, authentication architecture, and transaction strategy.
+
+Then implement the system phase by phase.
+
+After completing each major phase:
+
+1. Run linting.
+2. Run type checking.
+3. Run relevant tests.
+4. Fix errors before continuing.
+5. Verify database migrations.
+6. Verify existing functionality has not been broken.
+
+Do not stop after creating a UI prototype.
+
+Do not leave core functionality as TODO comments.
+
+Do not replace required functionality with mock data when database-backed implementation is expected.
+
+Make reasonable engineering decisions without repeatedly asking for confirmation unless a decision would substantially change the project requirements.
+
+At the end:
+
+1. Run the complete test suite.
+2. Run linting.
+3. Run TypeScript type checking.
+4. Run the production build.
+5. Fix all critical errors.
+6. Review authentication and inventory transaction security.
+7. Verify the database schema and migrations.
+8. Verify responsive behavior.
+9. Verify that the system contains only ONE user role: Administrator.
+10. Provide a concise final report explaining what was implemented, database migrations created, tests performed, deployment steps, and any remaining non-critical limitations.
+
+The final result must be a **working HM Laboratory Inventory Management System**, not merely a design or static prototype.
+
+
+Audit the entire project, find incomplete features, bugs, security problems, broken buttons, database issues, and build errors, then fix all of them.\

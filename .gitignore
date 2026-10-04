@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.env*
+!.env.example
+*.tsbuildinfo
+coverage/
+test-results/
+playwright-report/
+.local-db/
+.npm-cache/
+audit.json

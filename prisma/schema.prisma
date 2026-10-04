@@ -1,0 +1,351 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Condition {
+  NEW
+  GOOD
+  FAIR
+  DAMAGED
+  FOR_REPAIR
+  LOST_MISSING
+  DISPOSED
+}
+
+enum TransactionType {
+  BORROW
+  RETURN
+  BORROW_CANCEL
+  INITIAL
+  STOCK_IN
+  STOCK_OUT
+  ADJUSTMENT
+  DAMAGE
+  REPAIR
+  LOST
+  RECOVERY
+  DISPOSAL
+}
+
+enum DamageStatus {
+  FOR_ASSESSMENT
+  FOR_REPAIR
+  REPAIRED
+  BEYOND_REPAIR
+  DISPOSED
+}
+
+enum LostStatus {
+  MISSING
+  UNDER_INVESTIGATION
+  RECOVERED
+  DECLARED_LOST
+}
+
+model Admin {
+  id           Int       @id @default(1)
+  username     String    @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id
+  adminId   Int
+  admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model LoginAttempt {
+  key     String   @id
+  count   Int      @default(0)
+  resetAt DateTime
+}
+
+model Category {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  description String          @default("")
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  items       InventoryItem[]
+}
+
+model Location {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  description String          @default("")
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  items       InventoryItem[]
+}
+
+model InventoryItem {
+  borrowedQuantity  Int                     @default(0)
+  borrowItems       BorrowTransactionItem[]
+  id                String                  @id @default(cuid())
+  inventoryCode     String                  @unique
+  name              String
+  description       String                  @default("")
+  categoryId        String
+  category          Category                @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  locationId        String
+  location          Location                @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  brand             String                  @default("")
+  model             String                  @default("")
+  serialNumber      String                  @default("")
+  unit              String                  @default("piece")
+  quantity          Int                     @default(0)
+  availableQuantity Int                     @default(0)
+  minimumStock      Int                     @default(0)
+  unitCost          Decimal                 @default(0) @db.Decimal(14, 2)
+  totalValue        Decimal                 @default(0) @db.Decimal(24, 2)
+  dateAcquired      DateTime
+  supplier          String                  @default("")
+  condition         Condition               @default(GOOD)
+  isActive          Boolean                 @default(true)
+  notes             String                  @default("")
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  transactions      InventoryTransaction[]
+  damages           DamageRecord[]
+  losses            LostItemRecord[]
+  disposals         DisposalRecord[]
+  conditions        ConditionHistory[]
+
+  @@index([categoryId, locationId])
+  @@index([isActive, updatedAt])
+  @@index([name])
+  @@index([totalValue])
+}
+
+model InventoryTransaction {
+  borrowTransactionId String?
+  borrowTransaction   BorrowTransaction? @relation(fields: [borrowTransactionId], references: [id], onDelete: Restrict)
+  returnTransactionId String?
+  returnTransaction   ReturnTransaction? @relation(fields: [returnTransactionId], references: [id], onDelete: Restrict)
+  requestId           String?            @unique
+  requestHash         String?
+  id                  String             @id @default(cuid())
+  transactionNumber   String             @unique
+  itemId              String
+  item                InventoryItem      @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  type                TransactionType
+  quantity            Int
+  previousQuantity    Int
+  newQuantity         Int
+  previousAvailable   Int
+  newAvailable        Int
+  unitCost            Decimal            @db.Decimal(14, 2)
+  supplier            String             @default("")
+  referenceNumber     String             @default("")
+  purpose             String             @default("")
+  reason              String             @default("")
+  remarks             String             @default("")
+  transactionDate     DateTime
+  createdAt           DateTime           @default(now())
+
+  @@index([itemId, transactionDate])
+  @@index([type, transactionDate])
+}
+
+model DamageRecord {
+  returnItemId String?                @unique
+  returnItem   ReturnTransactionItem? @relation(fields: [returnItemId], references: [id], onDelete: Restrict)
+  id           String                 @id @default(cuid())
+  itemId       String
+  item         InventoryItem          @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  quantity     Int
+  dateReported DateTime
+  description  String
+  actionTaken  String                 @default("")
+  status       DamageStatus           @default(FOR_ASSESSMENT)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([itemId, status])
+}
+
+model LostItemRecord {
+  returnItemId String?                @unique
+  returnItem   ReturnTransactionItem? @relation(fields: [returnItemId], references: [id], onDelete: Restrict)
+  id           String                 @id @default(cuid())
+  itemId       String
+  item         InventoryItem          @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  quantity     Int
+  dateReported DateTime
+  description  String
+  remarks      String                 @default("")
+  status       LostStatus             @default(MISSING)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([itemId, status])
+}
+
+model DisposalRecord {
+  id           String        @id @default(cuid())
+  itemId       String
+  item         InventoryItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  quantity     Int
+  reason       String
+  disposalDate DateTime
+  method       String
+  remarks      String        @default("")
+  createdAt    DateTime      @default(now())
+
+  @@index([itemId, disposalDate])
+}
+
+model ConditionHistory {
+  id        String        @id @default(cuid())
+  itemId    String
+  item      InventoryItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  previous  Condition?
+  current   Condition
+  reason    String
+  createdAt DateTime      @default(now())
+
+  @@index([itemId, createdAt])
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  action      String
+  description String
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model Settings {
+  id              Int      @id @default(1)
+  institutionName String   @default("Hospitality Management")
+  laboratoryName  String   @default("HM Laboratory")
+  reportHeader    String   @default("HM Laboratory Inventory Management System")
+  updatedAt       DateTime @updatedAt
+}
+
+enum BorrowerType {
+  STUDENT
+  FACULTY
+  STAFF
+  DEPARTMENT
+  ORGANIZATION
+  OTHER
+}
+
+enum BorrowStatus {
+  BORROWED
+  PARTIALLY_RETURNED
+  RETURNED
+  OVERDUE
+  CANCELLED
+}
+
+enum ReturnCondition {
+  GOOD
+  FAIR
+  DAMAGED
+  LOST_MISSING
+}
+
+model BorrowTransaction {
+  id                    String                  @id @default(cuid())
+  transactionNumber     String                  @unique
+  requestId             String?                 @unique
+  requestHash           String?
+  borrowerName          String
+  borrowerType          BorrowerType
+  borrowerIdNumber      String                  @default("")
+  department            String                  @default("")
+  program               String                  @default("")
+  yearSection           String                  @default("")
+  contactNumber         String                  @default("")
+  purpose               String
+  borrowedDate          DateTime                @db.Date
+  expectedReturnDate    DateTime                @db.Date
+  finalReturnDate       DateTime?               @db.Date
+  status                BorrowStatus            @default(BORROWED)
+  remarks               String                  @default("")
+  cancelReason          String                  @default("")
+  cancelledAt           DateTime?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  items                 BorrowTransactionItem[]
+  returns               ReturnTransaction[]
+  inventoryTransactions InventoryTransaction[]
+
+  @@index([status, expectedReturnDate])
+  @@index([borrowerType, borrowedDate])
+  @@index([borrowerName])
+  @@index([borrowerIdNumber])
+}
+
+model BorrowTransactionItem {
+  id                     String                  @id @default(cuid())
+  borrowTransactionId    String
+  borrowTransaction      BorrowTransaction       @relation(fields: [borrowTransactionId], references: [id], onDelete: Restrict)
+  inventoryItemId        String
+  inventoryItem          InventoryItem           @relation(fields: [inventoryItemId], references: [id], onDelete: Restrict)
+  inventoryCode          String
+  itemName               String
+  unit                   String
+  quantityBorrowed       Int
+  quantityReturned       Int                     @default(0)
+  quantityCancelled      Int                     @default(0)
+  conditionBeforeRelease Condition
+  remarks                String                  @default("")
+  returns                ReturnTransactionItem[]
+
+  @@unique([borrowTransactionId, inventoryItemId])
+  @@index([inventoryItemId])
+}
+
+model ReturnTransaction {
+  id                    String                  @id @default(cuid())
+  returnNumber          String                  @unique
+  requestId             String?                 @unique
+  requestHash           String?
+  borrowTransactionId   String
+  borrowTransaction     BorrowTransaction       @relation(fields: [borrowTransactionId], references: [id], onDelete: Restrict)
+  returnDate            DateTime                @db.Date
+  remarks               String                  @default("")
+  createdAt             DateTime                @default(now())
+  items                 ReturnTransactionItem[]
+  inventoryTransactions InventoryTransaction[]
+
+  @@index([borrowTransactionId, returnDate])
+}
+
+model ReturnTransactionItem {
+  id                      String                @id @default(cuid())
+  returnTransactionId     String
+  returnTransaction       ReturnTransaction     @relation(fields: [returnTransactionId], references: [id], onDelete: Restrict)
+  borrowTransactionItemId String
+  borrowTransactionItem   BorrowTransactionItem @relation(fields: [borrowTransactionItemId], references: [id], onDelete: Restrict)
+  quantityReturned        Int
+  returnCondition         ReturnCondition
+  damageDescription       String                @default("")
+  actionRequired          String                @default("")
+  remarks                 String                @default("")
+  damage                  DamageRecord?
+  loss                    LostItemRecord?
+
+  @@index([borrowTransactionItemId])
+}
