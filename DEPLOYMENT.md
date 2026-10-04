@@ -1,6 +1,8 @@
 # Neon and Vercel deployment
 
-The Neon database configured in the local `.env` has all six committed migrations applied and the administrator initialized. Verification confirmed zero inventory records. No live Vercel deployment has been published yet; Vercel project configuration is still required.
+Production is live at https://hminventory.vercel.app in the Vercel project `cpcit/hminventory` (deployed October 4, 2026). The Neon database configured in the local `.env` has all six committed migrations applied and the administrator initialized. Production verification passed for HTTPS login, secure session cookies, dashboard access, inventory reports, logout, and rejection of unauthenticated dashboard requests.
+
+`DATABASE_URL` and `DIRECT_URL` are protected Vercel Production secrets. `APP_ORIGIN` is `https://hminventory.vercel.app`, and `SEED_SAMPLE_DATA` is `false`. Administrator initialization credentials were not uploaded. This deployment used the CLI; connecting the GitHub repository failed, so automatic deployments on Git pushes are not configured.
 
 Selected deployment mode: a fresh production database, without copying local inventory or adding sample records.
 
